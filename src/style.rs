@@ -31,13 +31,13 @@ impl<'a> StyledNode<'a> {
         Self {
             node,
             styles: match node.node_type {
-                NodeType::Element(ref e) => Self::get_styles(e, style_sheet),
+                NodeType::Element(ref e) => Self::styles(e, style_sheet),
                 _ => PropertyMap::new(),
             },
             children: style_children,
         }
     }
-    pub fn get_styles(element: &'a ElementData, stylesheet: &'a StyleSheet) -> PropertyMap<'a> {
+    pub fn styles(element: &'a ElementData, stylesheet: &'a StyleSheet) -> PropertyMap<'a> {
         let mut styles = PropertyMap::new();
 
         for rule in &stylesheet.rules {

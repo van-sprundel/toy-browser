@@ -149,7 +149,7 @@ pub fn render_loop(command_list: &[DisplayCommand]) {
         encoder.clear(&data.out, CLEAR_COLOR);
 
         encoder.draw(&slice, &pso, &data);
-        test_renderer.draw(&mut encoder, &data.out);
+        test_renderer.draw(&mut encoder, &data.out).unwrap();
 
         encoder.flush(&mut device);
         window.swap_buffers().unwrap();

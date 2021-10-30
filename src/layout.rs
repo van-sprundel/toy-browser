@@ -40,7 +40,7 @@ impl<'a> LayoutBox<'a> {
         let s = self.styled_node;
         let d = &mut self.dimensions;
 
-        let width = Self::get_absolute_num(s, b_box, "width").unwrap_or(0.);
+        let width = Self::absolute_num(s, b_box, "width").unwrap_or(0.);
         let margin_l = s.value("margin-left");
         let margin_r = s.value("margin-right");
 
@@ -188,7 +188,7 @@ impl<'a> LayoutBox<'a> {
         let s = self.styled_node;
         let d = &mut self.dimensions;
 
-        d.content.width = Self::get_absolute_num(s, b_box, "width").unwrap_or(0.);
+        d.content.width = Self::absolute_num(s, b_box, "width").unwrap_or(0.);
         d.margin.left = s.num_or("margin-left", 0.0);
         d.margin.right = s.num_or("margin-right", 0.0);
         d.padding.left = s.num_or("padding-left", 0.0);
@@ -214,7 +214,7 @@ impl<'a> LayoutBox<'a> {
             b_box.content.height + b_box.content.y + d.margin.top + d.border.top + d.padding.top;
     }
 
-    fn get_absolute_num(s_node: &StyledNode, b_box: Dimensions, prop: &str) -> Option<f32> {
+    fn absolute_num(s_node: &StyledNode, b_box: Dimensions, prop: &str) -> Option<f32> {
         if let Some(ref v) = s_node.value(prop) {
             if let Value::Length(l, ref u) = ***v {
                 return match *u {
