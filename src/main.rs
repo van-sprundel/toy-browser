@@ -20,8 +20,8 @@ fn main() {
 
     let layout_tree = layout::LayoutBox::layout_tree(&style_tree_root, viewport);
     layout::LayoutBox::pretty_print(&layout_tree, 0);
-
-    let display_commands = command::build_display_commands(&layout_tree);
+    let mut console = command::Console::new(Vec::new());
+    let display_commands = console.build_display_commands(&layout_tree);
     render::render_loop(&display_commands);
 }
 
