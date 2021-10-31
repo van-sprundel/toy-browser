@@ -97,5 +97,5 @@ impl Console {
 
 #[derive(Debug, Clone, Copy)]
 pub enum DisplayCommand {
-    SolidRectangle(Color, Rectangle),
+    SolidRectangle(Color, Rectangle)
 }

@@ -34,6 +34,10 @@ div {
 .red {
     background-color: #d61717;
 }
+.blue-border {
+    border-style: solid;
+    border-color: blue;
+}
 
 .orangered {
     background-color: orangered;
