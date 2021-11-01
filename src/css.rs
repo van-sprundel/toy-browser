@@ -1,7 +1,7 @@
 use std::fmt;
 use std::fmt::Formatter;
 
-#[derive(Default)]
+#[derive(Clone)]
 pub struct StyleSheet {
     pub rules: Vec<Rule>,
 }
@@ -15,7 +15,7 @@ impl StyleSheet {
 impl fmt::Debug for StyleSheet {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut rule_result = String::new();
-        for rule in &self.rules {
+        for rule in &**&self.rules {
             if rule_result.is_empty() {
                 rule_result.push_str("\n\n");
             }
@@ -25,7 +25,7 @@ impl fmt::Debug for StyleSheet {
     }
 }
 
-#[derive(Default)]
+#[derive(Default,Clone)]
 pub struct Rule {
     pub selectors: Vec<Selector>,
     pub declarations: Vec<Declaration>,
@@ -63,7 +63,7 @@ impl fmt::Debug for Rule {
     }
 }
 
-#[derive(PartialEq, Default)]
+#[derive(PartialEq, Default,Clone)]
 pub struct Selector {
     pub simple: Vec<SimpleSelector>,
     pub combinations: Vec<char>,
@@ -91,7 +91,7 @@ impl fmt::Debug for Selector {
     }
 }
 
-#[derive(PartialEq, Default)]
+#[derive(PartialEq, Default,Clone)]
 pub struct SimpleSelector {
     pub tag_name: Option<String>,
     pub id: Option<String>,
@@ -131,6 +131,7 @@ impl fmt::Debug for SimpleSelector {
         write!(f, "{}", result)
     }
 }
+#[derive(Clone)]
 pub struct Declaration {
     pub property: String,
     pub value: Value,
@@ -157,6 +158,7 @@ impl fmt::Debug for Declaration {
     }
 }
 
+#[derive(Clone)]
 pub enum Value {
     Color(Color),
     Length(f32, Unit),
@@ -253,6 +255,7 @@ impl fmt::Debug for Color {
 }
 
 #[allow(dead_code)]
+#[derive(Clone)]
 pub enum Unit {
     Em,   // inherited font size
     Ex,   // height font x char

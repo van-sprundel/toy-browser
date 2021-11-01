@@ -14,7 +14,7 @@ impl<'a> CssParser<'a> {
     }
 
     pub fn parse_stylesheet(&mut self) -> StyleSheet {
-        let mut stylesheet = StyleSheet::default();
+        let mut stylesheet: StyleSheet = StyleSheet::new(Vec::new());
 
         while self.chars.peek().is_some() {
             let selectors = self.parse_selectors();

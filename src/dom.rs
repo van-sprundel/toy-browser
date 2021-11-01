@@ -1,6 +1,10 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fmt::Formatter;
+use crate::{css_parser, html_parser};
+use crate::css::StyleSheet;
+use std::borrow::Borrow;
+use std::io::Read;
 
 pub struct Node {
     pub children: Vec<Node>,
@@ -9,8 +13,10 @@ pub struct Node {
 
 pub enum NodeType {
     Text(String),
+    // Plain old text
     Element(ElementData),
-    Comment(String),
+    // <tag_name,attributes> TODO support for closed tags
+    Comment(String), // <!--Comment-->
 }
 
 pub struct ElementData {
@@ -25,6 +31,7 @@ impl ElementData {
             attributes,
         }
     }
+
     pub fn get_id(&self) -> Option<&String> {
         self.attributes.get("id")
     }
@@ -45,6 +52,64 @@ impl Node {
             node_type,
             children,
         }
+    }
+    pub fn get_stylesheet_from_file(&self, base_url: &str) -> Option<StyleSheet> {
+        let mut res: Option<StyleSheet> = None;
+        match self.node_type {
+            NodeType::Element(ref e) => {
+                if e.tag_name == "link" {
+                    match e.attributes.get("rel") {
+                        Some(ref s) => {
+                            if s == &"stylesheet" {
+                                let url = base_url.to_owned() + &*"\\" + e.attributes.get("href").unwrap();
+                                let css = std::fs::read_to_string(url).unwrap();
+                                return Some(css_parser::CssParser::new(&css).parse_stylesheet());
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            _ => {}
+        }
+
+        for x in &self.children {
+            let s = x.get_stylesheet_from_file(base_url);
+            if let Some(_) = s {
+                res = s
+            }
+        }
+        res
+    }
+    pub fn get_stylesheet_from_url(&self, url: &str) -> Option<StyleSheet> {
+        let mut res: Option<StyleSheet> = None;
+        match self.node_type {
+            NodeType::Element(ref e) => {
+                if e.tag_name == "link" {
+                    match e.attributes.get("rel") {
+                        Some(ref s) => {
+                            if s == &"stylesheet" {
+                                let url = url.to_owned()+ e.attributes.get("href").unwrap();
+                                let mut res = reqwest::blocking::get(url).unwrap();
+                                let mut css = String::new();
+                                res.read_to_string(&mut css).unwrap();
+                                return Some(css_parser::CssParser::new(&css).parse_stylesheet());
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            _ => {}
+        }
+
+        for x in &self.children {
+            let s = x.get_stylesheet_from_url(url);
+            if let Some(_) = s {
+                res = s
+            }
+        }
+        res
     }
 }
 
@@ -69,7 +134,7 @@ impl fmt::Debug for ElementData {
         let mut attribute_string = String::new();
 
         for (attr, value) in self.attributes.iter() {
-            attribute_string.push_str(&format!("{}=\"{}\"", attr, value));
+            attribute_string.push_str(&format!(" {}=\"{}\"", attr, value));
         }
         write!(f, "<{},{}>", self.tag_name, attribute_string)
     }
@@ -88,6 +153,6 @@ pub fn pretty_print(n: &Node, indent_size: usize) {
         pretty_print(child, indent_size + 2);
     }
     if let NodeType::Element(ref e) = n.node_type {
-        println!("{}</{}", indent, e.tag_name)
+        println!("{}</{}>", indent, e.tag_name)
     }
 }

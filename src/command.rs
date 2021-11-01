@@ -2,6 +2,8 @@ use crate::css::{Color, Value};
 use crate::layout::{LayoutBox, Rectangle};
 
 pub type DisplayCommandList = Vec<DisplayCommand>;
+
+#[derive(Debug,Default,Clone)]
 pub struct Console {
     commands: DisplayCommandList,
 }

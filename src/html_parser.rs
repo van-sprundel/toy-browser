@@ -10,7 +10,7 @@ pub struct HtmlParser<'a> {
 impl<'a> HtmlParser<'a> {
     pub fn new(full_html: &str) -> HtmlParser {
         HtmlParser {
-            chars: full_html.chars().peekable(),
+            chars: full_html[15..].chars().peekable(),
             node_q: Vec::new(),
         }
     }

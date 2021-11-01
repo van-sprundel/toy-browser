@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 iced = {version= "0.3.0", features=["canvas"] }
+reqwest = {version ="0.11.6",features=["blocking"]}

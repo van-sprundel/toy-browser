@@ -20,20 +20,21 @@ pub enum Display {
 }
 
 impl<'a> StyledNode<'a> {
-    pub fn new(node: &'a Node, style_sheet: &'a StyleSheet) -> Self {
+    pub fn new(node: &'a Node,style_sheet: &'a StyleSheet) -> Self {
         let mut style_children = Vec::new();
-
+        let styles = match node.node_type {
+            NodeType::Element(ref e) => Self::styles(e, style_sheet),
+            _ => PropertyMap::new(),
+        };
         for child in &node.children {
             if let NodeType::Element(_) = child.node_type {
-                style_children.push(StyledNode::new(child, style_sheet));
+                style_children.push(StyledNode::new(child,style_sheet));
             }
         }
+
         Self {
             node,
-            styles: match node.node_type {
-                NodeType::Element(ref e) => Self::styles(e, style_sheet),
-                _ => PropertyMap::new(),
-            },
+            styles,
             children: style_children,
         }
     }
@@ -42,7 +43,7 @@ impl<'a> StyledNode<'a> {
 
         for rule in &stylesheet.rules {
             for selector in &rule.selectors {
-                if Self::selector_matches(element, selector) {
+                if Self::selector_matches(element, &selector) {
                     for declar in &rule.declarations {
                         styles.insert(&declar.property, &declar.value);
                     }
@@ -58,26 +59,22 @@ impl<'a> StyledNode<'a> {
     }
     pub fn get_display(&self) -> Display {
         match self.value("display") {
-            Some(s) => match **s {
-                Value::Other(ref v) => match v.as_ref() {
-                    "block" => Display::Block,
-                    "inline" => Display::Inline,
-                    "none" => Display::None,
-                    "inline-block" => Display::InlineBlock,
-                    _ => Display::Inline,
-                },
+            Some(Value::Other(ref v)) => match v.as_ref() {
+                "block" => Display::Block,
+                "inline" => Display::Inline,
+                "none" => Display::None,
+                "inline-block" => Display::InlineBlock,
                 _ => Display::Inline,
             },
-            None => Display::Inline,
+            _ => Display::Inline,
         }
     }
     pub fn num_or(&self, name: &str, default: f32) -> f32 {
         match self.value(name) {
-            Some(v) => match **v {
-                Value::Length(n, _) => n,
-                _ => default,
-            },
-            None => default,
+            Some(Value::Length(n, _)) => {
+                *n
+            }
+            _ => default,
         }
     }
     fn selector_matches(element: &ElementData, selector: &Selector) -> bool {
@@ -96,11 +93,8 @@ impl<'a> StyledNode<'a> {
                         }
                     }
                 }
-                None => match simple.id {
-                    Some(_) => {
-                        continue;
-                    }
-                    _ => {}
+                None => if let Some(_) = simple.id {
+                    continue;
                 },
             }
             let element_classes = element.get_classes();
@@ -118,7 +112,7 @@ impl<'a> StyledNode<'a> {
         let indent = (0..indent_size).map(|_| " ").collect::<String>();
         println!("{}{:?}", indent, node);
         for child in node.children.iter() {
-            Self::pretty_print(&child, indent_size + 2);
+            Self::pretty_print(child, indent_size + 2);
         }
     }
 }
